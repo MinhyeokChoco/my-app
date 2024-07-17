@@ -74,11 +74,11 @@ jobs :
 
     - name : deploy to EC2
       uses : appleboy/ssh-action@v1.0.3
-        with :
-          host : ${{ secrets.HOST }}
-          username : ${{ secrets.USERNAME }}
-          key : ${{ secrets.AWS_SECRET_KEY }}
-          port : ${{ secrets.PORT }}
-          script : |
-            cd /home/ubuntu
-            pm2 reload system.config.js --env production
+      with :
+        host : ${{ secrets.HOST }}
+        username : ${{ secrets.USERNAME }}
+        key : ${{ secrets.AWS_SECRET_KEY }}
+        port : ${{ secrets.PORT }}
+        script : |
+          cd /home/ubuntu
+          pm2 reload system.config.js --env production
