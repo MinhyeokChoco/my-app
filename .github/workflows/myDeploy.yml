@@ -35,4 +35,4 @@ jobs : # 작업의 단위
         run : echo 'my CI/CD' # 작업에서 실행할 쉘 스크립트 내용, console.log()와 동일 (출력 명령어)
 
       - name : mykey # 이름은 mykey
-        run : echo ${{ secrets.AWS_SECRET_KEY }}
+        run : echo ${{ secrets.HOST }}
