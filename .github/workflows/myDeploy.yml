@@ -22,4 +22,6 @@ jobs:
             port: ${{ secrets.PORT }}
             script: | # 실행할 스크립트
                 cd /home/ubuntu/myapp
+                git pull origin main
+                pm2 kill
                 npm start
