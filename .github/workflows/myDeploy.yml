@@ -57,6 +57,8 @@ jobs :
         key : ${{ secrets.AWS_SECRET_KEY }}
         port : ${{ secrets.PORT }}
         script : | # 실행할 스크립트 / | => 줄 내림 기호
+        ls
+        pwd
         cd /home/ubuntu
         rm -rf dist
         mkdir dist
