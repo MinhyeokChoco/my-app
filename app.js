@@ -7,7 +7,7 @@ const cors = require('cors');
 app.use(cors());
 
 app.get("/", (req, res) => {
-    res.send("내가 보임?")
+    res.send("오리미 화이팅 !!")
 })
 
 app.listen(PORT, (req, res) => {
