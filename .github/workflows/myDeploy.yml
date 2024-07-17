@@ -23,7 +23,7 @@ name : CI/CD 구축
 on : 
   push : # push 이벤트가 발생하면 실행
     branches : # push가 발생한 브랜치가 뭐일 때 실행할 지 
-      - master
+      - main
 
 jobs : # 작업의 단위
   myTest : # 식별자 이름(우리가 이름 정해도 됨)
