@@ -26,3 +26,18 @@ jobs : # 작업의 단위
         run  : |
           ls
           pwd
+
+      - name : npm install # package.json이 있으면 다운 받을 수 있음 / 의존성 설치
+        run  : npm install
+
+      - name : build nestjs # 빌드
+        run  : npm run build
+
+      - name : build test # 빌드 파일 확인
+        run  : |
+          ls
+          pwd
+          cd dist
+          ls
+          pwd
+          
