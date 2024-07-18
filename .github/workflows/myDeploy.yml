@@ -52,6 +52,7 @@ jobs: # 작업의 단위
             dist/
             package.json
             package-lock.json
+            system.config.js
 
       # 운영 서버에 전송 EC2에 파일을 전송
       # ssh
@@ -90,16 +91,18 @@ jobs: # 작업의 단위
             mkdir dist
             rm -rf package.json
             rm -rf package-lock.json
+            rm -rf system.config.js
 
-      # 왜 삭제 해야 하는지 여쭤보기
+      # 왜 삭제 해야 하는지 여쭤보기 : 파일을 덮어씌우는게 아닌 기존 파일을 삭제 하고 새로 복사해온 내용을 파일을 만들어서 제작해야 하기 때문에 삭제한다.
 
-      # ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu/dist/ : 원격 서버의 폴더에 파일을 복사한다. 오잉 ?
+      # ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu/dist/ : 원격 서버의 폴더에 파일을 복사한다.
       - name: EC2에 아티팩트 복사
         run:
           | # scp 파일을 복사하기 위한 명령어 / -r : 폴더를 재귀적으로 검토하는 명령어 (같은 이름으로 폴더 안에 폴더 안에가 있을 수도 있으니 그럴 때 사용) / -i : SSH 연결을 설정할 때 사용하는 키파일을 지정한다.
           scp -r -i ~/.ssh/aws_key ./dist/* ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu/dist/
           scp -i ~/.ssh/aws_key package.json ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu/
           scp -i ~/.ssh/aws_key package-lock.json ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu/
+          scp -i ~/.ssh/aws_key system.config.js ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu/
 
       - name: EC2 npm install
         uses: appleboy/ssh-action@v1.0.3 # ssh에 요청을 보내주는 라이브러리
@@ -115,7 +118,9 @@ jobs: # 작업의 단위
             npm install
 
       - name: deploy to EC2
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.3 # pm2 kill 중단이 되어버린다.
+        ## 무중단 배포
+        ## pm2 reload : 어플리케이션이 중단 없이 새로운 코드의 내용을 다시 가져온다. (kill 후 start와 동일하나 중단 없이 재시작 할 수 있음)
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -123,4 +128,6 @@ jobs: # 작업의 단위
           port: ${{ secrets.PORT }}
           script: |
             cd /home/ubuntu
-            pm2 start ./dist/main.js
+            pm2 reload system.config.js
+
+      # CI/CD로 자동 배포
