@@ -1,84 +1,28 @@
-name : last nest deploy
+name : Real Last Nest Build # 현재 제목
 
-on :
-  push :
-    branches :
+on : # 이벤트를 등록
+  push : # 푸쉬 이벤트가 발생하면 (pull request, 등등 원하는 이벤트를 넣어줄 수 있음)
+    branches : # branches 입력한 브랜치에 이벤트가 일어났을 때 작업을 동작시킨다.
       - main
 
-jobs :
-  build :
-    runs-on : ubuntu-latest
+# on : [push] => 브랜치 상관 없이 푸쉬 이벤트가 발생 하면 진행
+# uses : 외부 라이브러리 사용
 
-    steps :
-      - name : checkout
-        uses : actions/checkout@v4
+jobs : # 작업의 단위
+  bulid : # 식별자 이름 (이건 정해져 있지 않음, 그냥 식별자 이름임)
+    runs-on : ubuntu-latest # 러너에서 사용할 OS 결정, latest : 최신 버전이라는 뜻
 
-      - name : set up node
-        uses : actions/setup-node@v4
+    steps : # 작업의 가장 작은 단위
+      - name : checkout # 개발자가 어떤 작업인지 쉽게 알게 하기 위한 식별자 이름, 작업의 작은 단위의 이름
+        uses : actions/checkout@v4 # 라이브러리, 레포지토리를 체크아웃 할 수 있게 도와주는 라이브러리
+        # 브랜치에 있는 내용을 클론(복사)해온다. 워크 플로우에 복사해온다.
+
+      - name : set up node # uses 라이브러리를 사용할 것을 가져오고, with는 라이브러리의 속성 설정값
+        uses : actions/setup-node@v4 # 노드 버전을 가져온다.
         with :
-          node-version : '20'
+          node-version : '20' # 20 버전의 노드 런타임 환경을 제공한다.
 
-      # - name : create .env
-      #   run  : |
-      #     "${{ secrets.MY_KEY }}" > .env
-
-      - name : npm install # 의존성 설치 / "npm audit fix || true" : 보안 취약점을 자동으로 유연하게 수정해서 실패해도 일단 빌드 진행 하면서 의존성 유연하게 설치
-        run  : |
-          npm install
-
-      - name : build NestJS
-        run  : |
-          npm run build
-
-      - name : build output # 빌드가 잘 되었는지 모니터링 / "ls -la dist" : dist 폴더 안의 내용을 상세하게 출력, pwd 현재 작업 경로 출력
-        run  : |
-          ls -la dist
-          pwd
-
-      - name : Upload build artifacts # 빌드 준비 단계 업로드 하기 전 단계
-        uses : actions/upload-artifact@v4
-        with :
-          name : build-artifacts
-          path : dist/ # 경로
-
-      - name : install ssh key
-        run  : |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.AWS_SECRET_KEY }}" > ~/.ssh/aws_key
-          chmod 600 ~/.ssh/aws_key
-          ssh-keyscan -H ${{ secrets.HOST }} >> ~/.ssh/known_hosts
-          cat ~/.ssh/known_hosts
-
-      - name : test
+      - name : test # 의존성을 설치하기전에 폴더 구조 확인, pwd : 현재 작업 환경의 경로 ex) C://MH/AWS/20240717/myapp/.github/workflows
         run  : |
           ls
           pwd
-
-      - name : EC2 deploy
-        uses : appleboy/ssh-action@v1.0.3
-        with :
-          host : ${{ secrets.HOST }}
-          username : ${{ secrets.USERNAME }}
-          key : ${{ secrets.AWS_SECRET_KEY }}
-          port : ${{ secrets.PORT }}
-          script : | # 실행할 스크립트 / | => 줄 내림 기호
-            cd /home/ubuntu
-            rm -rf dist
-            mkdir dist
-
-      - name : EC2에 아티팩트 내용 복사
-        run  : |
-          ls
-          pwd
-          scp -r -i ~/.ssh/aws_key ./dist/* ${{ secrets.USERNAME }}@${{ secrets.HOST }}:/home/ubuntu/dist/
-
-      - name : deploy to EC2
-        uses : appleboy/ssh-action@v1.0.3
-        with :
-          host : ${{ secrets.HOST }}
-          username : ${{ secrets.USERNAME }}
-          key : ${{ secrets.AWS_SECRET_KEY }}
-          port : ${{ secrets.PORT }}
-          script : |
-            cd /home/ubuntu
-            pm2 reload system.config.js --env production
